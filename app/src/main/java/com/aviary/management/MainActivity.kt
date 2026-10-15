@@ -2,8 +2,13 @@ package com.aviary.management
 
 import android.app.Activity
 import android.content.Context
-import android.os.Build
+import android.net.Uri
+import android.os.Bundle
 import android.text.format.DateFormat
+import android.widget.Toast
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -15,21 +20,15 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.filled.EmojiNature
-import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.MonitorHeart
 import androidx.compose.material.icons.filled.Pets
-import androidx.compose.material.icons.filled.Straighten
-import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -59,19 +58,22 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.room.Room
-import androidx.work.WorkManager
+import androidx.lifecycle.lifecycleScope
 import com.aviary.management.data.Aviary
 import com.aviary.management.data.Bird
 import com.aviary.management.data.DatabaseProvider
 import com.aviary.management.data.FeedingEntry
 import com.aviary.management.data.HealthEntry
+import com.aviary.management.notifications.ReminderScheduler
+import com.aviary.management.ui.CsvImportButton
 import com.aviary.management.ui.theme.AviaryTheme
 import com.aviary.management.ui.theme.BrandColors
+import com.aviary.management.util.CsvImporter
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 import java.util.Date
 
-class MainActivity : androidx.activity.ComponentActivity() {
+class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
@@ -108,11 +110,6 @@ fun AviaryApp() {
         db.feedingEntryDao().observeAll().collectLatest { feedingEntries = it }
     }
 
-    val countBirds = birds.size
-    val countAviaries = aviaries.size
-    val countHealth = healthEntries.size
-    val countFeed = feedingEntries.size
-
     var showAddBird by remember { mutableStateOf(false) }
     var showAddAviary by remember { mutableStateOf(false) }
     var showAddHealth by remember { mutableStateOf(false) }
@@ -138,12 +135,12 @@ fun AviaryApp() {
             ) {
                 AppTab.values().forEach { tab ->
                     val selected = tab == selectedTab
-                    val icon = when(tab) {
-                        AppTab.Dashboard -> Icons.Default.Home
-                        AppTab.Birds -> Icons.Default.Pets
-                        AppTab.Aviaries -> Icons.Default.EmojiNature
-                        AppTab.Health -> Icons.Default.MonitorHeart
-                        AppTab.Feed -> Icons.Default.CalendarToday
+                    val icon = when (tab) {
+                        AppTab.Dashboard -> androidx.compose.material.icons.Icons.Default.Home
+                        AppTab.Birds -> androidx.compose.material.icons.Icons.Default.Pets
+                        AppTab.Aviaries -> androidx.compose.material.icons.Icons.Default.EmojiNature
+                        AppTab.Health -> androidx.compose.material.icons.Icons.Default.MonitorHeart
+                        AppTab.Feed -> androidx.compose.material.icons.Icons.Default.CalendarToday
                     }
                     Column(
                         modifier = Modifier
@@ -170,12 +167,22 @@ fun AviaryApp() {
         ) {
             when (selectedTab) {
                 AppTab.Dashboard -> DashboardScreen(
-                    birdCount = countBirds,
-                    aviaryCount = countAviaries,
-                    healthCount = countHealth,
-                    feedCount = countFeed,
+                    birdCount = birds.size,
+                    aviaryCount = aviaries.size,
+                    healthCount = healthEntries.size,
+                    feedCount = feedingEntries.size,
                     onAddBird = { showAddBird = true },
-                    onAddAviary = { showAddAviary = true }
+                    onAddAviary = { showAddAviary = true },
+                    onImportCsv = { uri ->
+                        kotlinx.coroutines.launch {
+                            val count = CsvImporter.importBirdsFromCsv(context, uri)
+                            Toast.makeText(context, "Imported $count birds", Toast.LENGTH_SHORT).show()
+                        }
+                    },
+                    onScheduleReminder = {
+                        ReminderScheduler.scheduleReminder(context, "Feeding reminder", "Time to check your aviary birds.", 1)
+                        Toast.makeText(context, "Reminder scheduled", Toast.LENGTH_SHORT).show()
+                    }
                 )
                 AppTab.Birds -> BirdListScreen(
                     birds = birds,
@@ -274,7 +281,9 @@ fun DashboardScreen(
     healthCount: Int,
     feedCount: Int,
     onAddBird: () -> Unit,
-    onAddAviary: () -> Unit
+    onAddAviary: () -> Unit,
+    onImportCsv: (Uri) -> Unit,
+    onScheduleReminder: () -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -300,6 +309,8 @@ fun DashboardScreen(
                 Text("Quick actions", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold, color = BrandColors.GreenDeep)
                 Button(onClick = onAddBird, modifier = Modifier.fillMaxWidth()) { Text("Add Bird") }
                 Button(onClick = onAddAviary, modifier = Modifier.fillMaxWidth()) { Text("Add Aviary") }
+                CsvImportButton(onImport = onImportCsv)
+                Button(onClick = onScheduleReminder, modifier = Modifier.fillMaxWidth()) { Text("Schedule reminder test") }
             }
         }
     }
@@ -463,7 +474,6 @@ fun AddBirdDialog(
                 })
                 SpeciesDropdown(label = "Mutation", selected = selectedMutation, options = GeneticsCatalog.mutationsFor(selectedSpecies), onChange = { selectedMutation = it })
                 if (aviaries.isNotEmpty()) {
-                    val options = aviaries.map { it.name to it.id }
                     var expanded by remember { mutableStateOf(false) }
                     ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = { expanded = !expanded }) {
                         OutlinedTextField(
