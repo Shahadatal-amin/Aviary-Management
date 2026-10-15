@@ -1,0 +1,9 @@
+.gitignore
+.idea/
+.gradle/
+local.properties
+/build/
+**/build/
+*.iml
+.DS_Store
+Thumbs.db
