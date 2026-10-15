@@ -1,7 +1,7 @@
-<resources xmlns:tools="http://schemas.android.com/tools">
+<resources>
     <style name="Theme.AviaryManagement" parent="Theme.Material3.DayNight.NoActionBar">
-        <item name="android:statusBarColor">@color/brand_green_dark</item>
-        <item name="android:navigationBarColor">@color/brand_background</item>
+        <item name="android:statusBarColor">@color/green_deep</item>
+        <item name="android:navigationBarColor">@color/background</item>
         <item name="android:windowLightStatusBar">false</item>
     </style>
 </resources>

@@ -1,5 +1,7 @@
 package com.aviary.management
 
+import androidx.annotation.DrawableRes
+
 object GeneticsCatalog {
     val species = listOf(
         "Fischer's Lovebird",
@@ -11,70 +13,13 @@ object GeneticsCatalog {
     )
 
     private val mutations = mapOf(
-        "Fischer's Lovebird" to listOf(
-            "Normal",
-            "Pastel",
-            "Cinnamon",
-            "Lutino",
-            "Pied",
-            "Violet",
-            "Dark Factor",
-            "Split Pastel",
-            "Split Cinnamon"
-        ),
-        "Peach-faced Lovebird" to listOf(
-            "Normal",
-            "Blue",
-            "Cinnamon",
-            "Pied",
-            "Violet",
-            "Pale",
-            "Pastel",
-            "Sapphire",
-            "Dominant Silver"
-        ),
-        "Masked Lovebird" to listOf(
-            "Normal",
-            "Blue",
-            "Cinnamon",
-            "Pied",
-            "Pastel",
-            "Lutino",
-            "Dark Factor",
-            "Violet",
-            "Golden"
-        ),
-        "Nyasa Lovebird" to listOf(
-            "Normal",
-            "Pastel",
-            "Silver",
-            "Pied",
-            "Cinnamon",
-            "Blue",
-            "Dark Factor",
-            "Violet"
-        ),
-        "Black-cheeked Lovebird" to listOf(
-            "Normal",
-            "Blue",
-            "Pied",
-            "Pastel",
-            "Cinnamon",
-            "White",
-            "Lutino",
-            "Violet"
-        ),
-        "Red-faced Lovebird" to listOf(
-            "Normal",
-            "Cinnamon",
-            "Pied",
-            "Pastel",
-            "Blue",
-            "Lutino",
-            "Violet",
-            "Dark Factor"
-        )
+        "Fischer's Lovebird" to listOf("Normal", "Pastel", "Cinnamon", "Lutino", "Pied", "Violet", "Dark Factor"),
+        "Peach-faced Lovebird" to listOf("Normal", "Blue", "Pied", "Pastel", "Cinnamon", "Sapphire", "Violet"),
+        "Masked Lovebird" to listOf("Normal", "Blue", "Pied", "Pastel", "Cinnamon", "Lutino", "Violet"),
+        "Nyasa Lovebird" to listOf("Normal", "Pastel", "Blue", "Cinnamon", "Silver", "Pied"),
+        "Black-cheeked Lovebird" to listOf("Normal", "Blue", "Pied", "Pastel", "Cinnamon", "White", "Lutino"),
+        "Red-faced Lovebird" to listOf("Normal", "Cinnamon", "Pied", "Pastel", "Blue", "Lutino", "Violet")
     )
 
-    fun mutationsFor(species: String): List<String> = mutations[species] ?: listOf("Normal")
+    fun mutationsFor(speciesName: String): List<String> = mutations[speciesName] ?: listOf("Normal")
 }
