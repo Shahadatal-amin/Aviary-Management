@@ -12,8 +12,8 @@ android {
         applicationId = "com.aviary.management"
         minSdk = 24
         targetSdk = 34
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = 2
+        versionName = "1.1"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
@@ -49,6 +49,8 @@ android {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
     }
+
+    // Signing configs are intentionally omitted. Create a keystore locally for release builds.
 }
 
 dependencies {
@@ -67,6 +69,13 @@ dependencies {
     implementation("androidx.work:work-runtime-ktx:2.9.0")
     implementation("androidx.core:core-ktx:1.13.1")
     implementation("io.coil-kt:coil-compose:2.5.0")
+
+    // Firebase (optional). Add google-services.json to app/ and enable Google services plugin in your build if you want to use cloud sync.
+    implementation(platform("com.google.firebase:firebase-bom:32.1.0"))
+    implementation("com.google.firebase:firebase-auth-ktx")
+    implementation("com.google.firebase:firebase-firestore-ktx")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.6.4")
+
     debugImplementation("androidx.compose.ui:ui-tooling")
     debugImplementation("androidx.compose.ui:ui-test-manifest")
 }
