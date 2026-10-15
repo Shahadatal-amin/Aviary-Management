@@ -64,7 +64,7 @@ fun AviaryManagementApp() {
         topBar = {
             TopAppBar(
                 title = {
-                    Text("Lovebird Aviary")
+                    Text("Aviary Management")
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = BrandColors.GreenDeep,
@@ -204,7 +204,7 @@ fun BirdFormScreen() {
                 }
 
                 Text(
-                    text = "Data source: public lovebird genetics references, adapted into a local catalog for app use.",
+                    text = "Data source: curated local genetics catalog. Do not import or display third-party copyrighted content without permission.",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.75f)
                 )

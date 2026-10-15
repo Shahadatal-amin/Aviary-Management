@@ -1,0 +1,3 @@
+Curated local genetics catalog is used in this project for UI and development purposes. No copyrighted site content has been copied into this repository.
+
+If you later provide a licensed dataset or permission to use an external site's content, include it in a clearly named file and add attribution in README.
